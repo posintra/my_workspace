@@ -1,0 +1,410 @@
+from __future__ import annotations
+
+from html import escape
+from pathlib import Path
+
+from openpyxl import load_workbook
+
+
+WORKBOOK = Path("모듈실행파일_002_summary생성.xlsm")
+
+
+def money(value) -> str:
+    try:
+        return f"{int(round(float(value))):,}"
+    except Exception:
+        return "-"
+
+
+def pct(value) -> str:
+    try:
+        return f"{float(value):.1f}%"
+    except Exception:
+        return "-"
+
+
+def line_chart(title: str, values: list[float], labels: list[str], colors: list[str]) -> str:
+    w, h = 360, 210
+    left, top, right, bottom = 42, 20, 18, 34
+    plot_w, plot_h = w - left - right, h - top - bottom
+    max_v = max(values) if values else 1
+    if max_v <= 0:
+        max_v = 1
+    points = []
+    circles = []
+    texts = []
+    for i, value in enumerate(values):
+        x = left + plot_w * i / max(1, len(values) - 1)
+        y = top + plot_h - plot_h * value / max_v
+        points.append(f"{x:.1f},{y:.1f}")
+        circles.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5.5" fill="{colors[i]}" stroke="#fff" stroke-width="2"/>')
+        texts.append(f'<text x="{x:.1f}" y="{y-10:.1f}" text-anchor="middle" font-size="11" font-weight="700" fill="#102033">{money(value)}</text>')
+    grid = []
+    for i in range(5):
+        y = top + plot_h - plot_h * i / 4
+        grid.append(f'<line x1="{left}" y1="{y:.1f}" x2="{w-right}" y2="{y:.1f}" stroke="#e8eef5" stroke-width="1"/>')
+    label_nodes = []
+    for i, label in enumerate(labels):
+        x = left + plot_w * i / max(1, len(labels) - 1)
+        label_nodes.append(f'<text x="{x:.1f}" y="{h-10}" text-anchor="middle" font-size="12" font-weight="700" fill="#324255">{escape(label)}</text>')
+    return f"""
+      <div class="chart-card">
+        <div class="chart-title">
+          <h3>{escape(title)}</h3>
+          <p class="hint">단위: 원</p>
+        </div>
+        <svg class="line-svg" viewBox="0 0 {w} {h}" width="100%" role="img" aria-label="{escape(title)}">
+          <rect x="0" y="0" width="{w}" height="{h}" rx="14" fill="#fff"/>
+          {''.join(grid)}
+          <line x1="{left}" y1="{top}" x2="{left}" y2="{top + plot_h}" stroke="#cbd5e1" stroke-width="1"/>
+          <line x1="{left}" y1="{top + plot_h}" x2="{w-right}" y2="{top + plot_h}" stroke="#cbd5e1" stroke-width="1"/>
+          <polyline points="{' '.join(points)}" fill="none" stroke="{colors[-1]}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          {''.join(circles)}
+          {''.join(texts)}
+          {''.join(label_nodes)}
+        </svg>
+      </div>
+    """
+
+
+def bar_panel(title: str, people: list[dict], goal_key: str, base_key: str, forecast_key: str, list_title: str) -> str:
+    max_v = max((max(p[goal_key], p[base_key], p[forecast_key]) for p in people), default=1)
+    rows = []
+    for p in people:
+        rows.append(
+            f"""
+            <tr>
+              <td class="metric-label">{escape(p['name'])}</td>
+              <td colspan="2">
+                <table class="mini-bars" role="presentation">
+                  <tr>
+                    <td class="mini-label">목표</td>
+                    <td class="mini-track"><span class="mini-fill blue" style="width:{(p[goal_key]/max_v*100 if max_v else 0):.1f}%"></span></td>
+                    <td class="mini-value">{money(p[goal_key])}</td>
+                  </tr>
+                  <tr>
+                    <td class="mini-label">기저</td>
+                    <td class="mini-track"><span class="mini-fill gold" style="width:{(p[base_key]/max_v*100 if max_v else 0):.1f}%"></span></td>
+                    <td class="mini-value">{money(p[base_key])}</td>
+                  </tr>
+                  <tr>
+                    <td class="mini-label">추정</td>
+                    <td class="mini-track"><span class="mini-fill green" style="width:{(p[forecast_key]/max_v*100 if max_v else 0):.1f}%"></span></td>
+                    <td class="mini-value">{money(p[forecast_key])}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            """
+        )
+    top_people = sorted(people, key=lambda x: x[forecast_key], reverse=True)[:3]
+    list_rows = "".join(
+        f'<div class="list-row"><span class="name">{idx}. {escape(p["name"])}</span><span class="value">{money(p[forecast_key])}</span></div>'
+        for idx, p in enumerate(top_people, start=1)
+    )
+    return f"""
+      <div class="chart-card">
+        <div class="chart-title">
+          <h3>{escape(title)}</h3>
+          <p class="hint">상위 3명 중심</p>
+        </div>
+        <table class="person-table" role="presentation">
+          {''.join(rows)}
+        </table>
+        <div class="text-list">
+          <div class="list-head">{escape(list_title)}</div>
+          {list_rows}
+        </div>
+      </div>
+    """
+
+
+def main() -> None:
+    wb = load_workbook(WORKBOOK, data_only=True, keep_vba=True)
+    ws = wb["목표실적요약"]
+
+    execution_date = ws["B2"].value.strftime("%Y-%m-%d") if hasattr(ws["B2"].value, "strftime") else str(ws["B2"].value)
+    output = Path(f"sales-dashboard_{ws['B2'].value.strftime('%y%m%d') if hasattr(ws['B2'].value, 'strftime') else 'output'}.html")
+    current_quarter = ws["D2"].value or "-"
+    team_annual = [float(ws["B5"].value or 0), float(ws["C5"].value or 0), float(ws["D5"].value or 0)]
+    team_quarter = [float(ws["B6"].value or 0), float(ws["C6"].value or 0), float(ws["D6"].value or 0)]
+    team_current = [float(ws["B7"].value or 0), float(ws["C7"].value or 0), float(ws["D7"].value or 0)]
+
+    people = []
+    for row in range(11, 20):
+        people.append(
+            {
+                "name": ws[f"A{row}"].value,
+                "annual_goal": float(ws[f"B{row}"].value or 0),
+                "annual_base": float(ws[f"C{row}"].value or 0),
+                "annual_forecast": float(ws[f"D{row}"].value or 0),
+                "quarter_goal": float(ws[f"E{row}"].value or 0),
+                "quarter_base": float(ws[f"F{row}"].value or 0),
+                "quarter_forecast": float(ws[f"G{row}"].value or 0),
+            }
+        )
+
+    annual_sorted = sorted(people, key=lambda x: x["annual_forecast"], reverse=True)
+    quarter_sorted = sorted(people, key=lambda x: x["quarter_forecast"], reverse=True)
+
+    detail_rows = []
+    for p in people:
+        detail_rows.append(
+            f"""
+            <tr>
+              <td>{escape(p['name'])}</td>
+              <td class="num">{money(p['annual_goal'])}</td>
+              <td class="num">{money(p['annual_base'])}</td>
+              <td class="num">{money(p['annual_forecast'])}</td>
+              <td class="num">{money(p['quarter_goal'])}</td>
+              <td class="num">{money(p['quarter_base'])}</td>
+              <td class="num">{money(p['quarter_forecast'])}</td>
+            </tr>
+            """
+        )
+
+    html = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>영업실적 대시보드</title>
+  <style>
+    :root {{
+      --bg:#edf2f7; --panel:#ffffff; --text:#102033; --muted:#607085; --line:#d8e1ea;
+      --accent:#165dff; --accent2:#10a37f; --accent3:#7c3aed; --warn:#f59e0b;
+      --shadow:0 16px 40px rgba(16,32,51,.08);
+    }}
+    *{{box-sizing:border-box}}
+    body{{margin:0;background:radial-gradient(circle at top left, rgba(22,93,255,.12), transparent 24%),radial-gradient(circle at top right, rgba(124,58,237,.10), transparent 22%),linear-gradient(180deg,#f7fafc 0%,var(--bg) 100%);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Segoe UI",sans-serif}}
+    .wrap{{width:min(1380px, calc(100% - 32px));margin:24px auto 32px}}
+    .hero{{background:linear-gradient(135deg,#152334 0%,#1c3147 52%,#102033 100%);color:#fff;border-radius:22px;box-shadow:var(--shadow);padding:28px 30px;display:table;width:100%}}
+    .hero-left,.hero-right{{display:table-cell;vertical-align:top}}
+    .hero-right{{text-align:right;width:290px}}
+    .pill{{display:inline-block;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);font-size:13px;color:#dbe7f1;margin-bottom:10px}}
+    .hero h1{{margin:0 0 8px;font-size:32px;line-height:1.2;letter-spacing:-.03em}}
+    .hero p{{margin:0;color:#bfd0e0;font-size:14px;line-height:1.6;max-width:760px}}
+    .hero-right .date{{font-size:14px;color:#dbe7f1;margin-bottom:10px}}
+    .hero-right .ratio{{font-size:38px;font-weight:800;line-height:1;letter-spacing:-.04em}}
+    .hero-right .ratio-sub{{margin-top:8px;color:#c6d4e2;font-size:13px}}
+    .grid{{display:grid;gap:16px;margin-top:16px}}
+    .kpis{{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .card{{background:var(--panel);border:1px solid rgba(216,225,234,.9);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}}
+    .kpi{{padding:18px 18px 16px}}
+    .kpi .label{{color:var(--muted);font-size:12px;margin-bottom:8px}}
+    .kpi .value{{font-size:25px;line-height:1.15;font-weight:800;letter-spacing:-.03em}}
+    .kpi .sub{{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}}
+    .kpi.accent{{border-top:4px solid var(--accent)}}
+    .kpi.green{{border-top:4px solid var(--accent2)}}
+    .kpi.purple{{border-top:4px solid var(--accent3)}}
+    .kpi.gold{{border-top:4px solid var(--warn)}}
+    .section{{padding:18px 20px 20px}}
+    .section-head{{display:table;width:100%;margin-bottom:14px}}
+    .section-head .left,.section-head .right{{display:table-cell;vertical-align:bottom}}
+    .section-head .right{{text-align:right;color:var(--muted);font-size:13px}}
+    .section-head h2{{margin:0;font-size:20px;line-height:1.25;letter-spacing:-.03em}}
+    .section-head .desc{{margin:4px 0 0;color:var(--muted);font-size:13px}}
+    .team-grid{{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:16px}}
+    .summary-box{{padding:18px 20px 20px}}
+    .mini-grid{{width:100%;border-collapse:separate;border-spacing:12px 0;margin-bottom:14px}}
+    .mini{{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,#fff,#fbfdff);vertical-align:top;width:33.33%}}
+    .mini .t{{color:var(--muted);font-size:12px;margin-bottom:8px}}
+    .mini .v{{font-size:22px;font-weight:800;line-height:1.1;letter-spacing:-.03em}}
+    .mini .s{{margin-top:7px;font-size:12px;color:var(--muted)}}
+    .chart-stack{{display:grid;gap:14px}}
+    .chart-card{{border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;background:linear-gradient(180deg,#fff,#fbfdff)}}
+    .chart-title{{display:table;width:100%;margin-bottom:10px}}
+    .chart-title h3{{display:table-cell;margin:0;font-size:14px;line-height:1.25;letter-spacing:-.02em}}
+    .chart-title .hint{{display:table-cell;margin:0;color:var(--muted);font-size:12px;text-align:right;white-space:nowrap}}
+    .line-svg{{display:block;width:100%;height:auto}}
+    .chart-grid{{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
+    .person-table{{width:100%;border-collapse:collapse;table-layout:fixed}}
+    .person-table td{{border-top:1px solid var(--line);padding:8px 0;vertical-align:middle;font-size:12px}}
+    .person-table tr:first-child td{{border-top:0}}
+    .metric-label{{width:90px;font-weight:700;color:#203147;padding-right:12px}}
+    .mini-bars{{width:100%;border-collapse:collapse;table-layout:fixed}}
+    .mini-bars td{{border-top:0;padding:2px 0}}
+    .mini-label{{width:40px;color:var(--muted);font-weight:700}}
+    .mini-track{{height:10px;border-radius:999px;background:#e8eef5;overflow:hidden;position:relative}}
+    .mini-fill{{display:block;height:100%;border-radius:999px}}
+    .mini-fill.blue{{background:linear-gradient(90deg,var(--accent),#4d8bff)}}
+    .mini-fill.gold{{background:linear-gradient(90deg,var(--warn),#ffcb66)}}
+    .mini-fill.green{{background:linear-gradient(90deg,var(--accent2),#4ad6b1)}}
+    .mini-value{{width:140px;text-align:right;color:#203147;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}}
+    .text-list{{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px;color:#203147}}
+    .list-head{{font-weight:700;margin-bottom:8px;color:#102033}}
+    .list-row{{display:table;width:100%;margin:4px 0}}
+    .list-row .name,.list-row .value{{display:table-cell}}
+    .list-row .name{{font-weight:700}}
+    .list-row .value{{text-align:right;color:#4b5a6e;font-variant-numeric:tabular-nums}}
+    .foot{{margin-top:14px;color:var(--muted);font-size:11px;line-height:1.5}}
+    .detail-table{{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:10px}}
+    .detail-table th,.detail-table td{{border:1px solid var(--line);padding:10px 10px;font-size:13px;line-height:1.25;vertical-align:middle;background:#fff}}
+    .detail-table th{{background:#f5f8fb;color:#253548;font-weight:700;text-align:center}}
+    .detail-table td:first-child,.detail-table th:first-child{{text-align:left;font-weight:700}}
+    .detail-table td.num{{text-align:right;font-variant-numeric:tabular-nums}}
+    .detail-table tr.total td{{background:#f7fbff;font-weight:800}}
+    @media (max-width:1120px){{
+      .hero,.section-head{{display:block}}
+      .hero-right{{text-align:left;width:auto;margin-top:18px;display:block}}
+      .kpis,.team-grid,.chart-grid{{grid-template-columns:1fr 1fr}}
+      .team-grid{{grid-template-columns:1fr}}
+    }}
+    @media (max-width:760px){{
+      .wrap{{width:min(100% - 20px,1380px);margin:10px auto 20px}}
+      .hero{{padding:20px}}
+      .hero h1{{font-size:24px}}
+      .kpis,.chart-grid{{grid-template-columns:1fr}}
+      .section,.summary-box{{padding:16px}}
+      .chart-title{{display:block}}
+      .chart-title .hint{{display:block;text-align:left;margin-top:4px}}
+      .person-table td{{display:block;width:100%}}
+      .metric-label{{width:auto;padding-right:0;padding-bottom:6px}}
+      .mini-value{{width:110px}}
+    }}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-left">
+        <div class="pill">영업실적 대시보드 · 2026년 3분기</div>
+        <h1>2026년 목표/기저/추정금액 대시보드</h1>
+        <p>워크북의 `목표실적요약` 시트를 기준으로 팀 합계와 영업담당자별 목표, 기저, 추정 값을 한 화면에 정리했습니다.</p>
+      </div>
+      <div class="hero-right">
+        <div class="date">실행일 · {escape(execution_date)}</div>
+        <div class="ratio">{escape(str(current_quarter))}</div>
+        <div class="ratio-sub">기준분기</div>
+      </div>
+    </div>
+
+    <table class="grid kpis" role="presentation" style="width:100%;margin-top:16px;border-spacing:0;border-collapse:separate;">
+      <tr>
+        <td class="card kpi accent">
+          <div class="label">팀 연간 목표금액</div>
+          <div class="value">{money(team_annual[0])}</div>
+          <div class="sub">팀 전체 연간 목표 합계</div>
+        </td>
+        <td class="card kpi green">
+          <div class="label">팀 연간 기저금액</div>
+          <div class="value">{money(team_annual[1])}</div>
+          <div class="sub">현재 기저 실적 누계</div>
+        </td>
+        <td class="card kpi purple">
+          <div class="label">팀 연간 추정금액</div>
+          <div class="value">{money(team_annual[2])}</div>
+          <div class="sub">목표 대비 추정 실적</div>
+        </td>
+        <td class="card kpi gold">
+          <div class="label">기준분기</div>
+          <div class="value">{escape(str(current_quarter))}</div>
+          <div class="sub">실행일: {escape(execution_date)}</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="team-grid">
+      <div class="card section">
+        <div class="section-head">
+          <div class="left">
+            <h2>팀 목표실적 요약</h2>
+            <div class="desc">연간, 분기누적, 현 분기의 목표와 추정 흐름을 각각 비교합니다.</div>
+          </div>
+          <div class="right">단위: 원</div>
+        </div>
+        <div class="chart-stack">
+          {line_chart("팀 연간 목표금액 · 기저금액 · 추정금액", team_annual, ["목표", "기저", "추정"], ["#165dff", "#f59e0b", "#10a37f"])}
+          {line_chart("팀 분기누적 목표금액 · 기저금액 · 추정금액", team_quarter, ["목표", "기저", "추정"], ["#7c3aed", "#f59e0b", "#10a37f"])}
+          {line_chart("팀 현 분기 목표금액 · 기저금액 · 추정금액", team_current, ["목표", "기저", "추정"], ["#0f766e", "#f59e0b", "#10a37f"])}
+        </div>
+      </div>
+
+      <div class="card summary-box">
+        <div class="section-head" style="margin-bottom:10px;">
+          <div class="left">
+            <h2>핵심 지표</h2>
+            <div class="desc">한눈에 보는 기준분기, 실행일, 연간/분기 합계</div>
+          </div>
+        </div>
+        <table class="mini-grid" role="presentation">
+          <tr>
+            <td class="mini">
+              <div class="t">실행일</div>
+              <div class="v">{escape(execution_date)}</div>
+              <div class="s">워크북 기준값</div>
+            </td>
+            <td class="mini">
+              <div class="t">기준분기</div>
+              <div class="v">{escape(str(current_quarter))}</div>
+              <div class="s">대시보드 기준분기</div>
+            </td>
+            <td class="mini">
+              <div class="t">팀 분기누적 추정금액</div>
+              <div class="v">{money(team_quarter[2])}</div>
+              <div class="s">목표 {money(team_quarter[0])}</div>
+            </td>
+          </tr>
+        </table>
+        <div class="foot">연간/분기누적 금액은 워크북 원본 값을 그대로 반영했습니다.</div>
+      </div>
+    </div>
+
+    <div class="card section" style="margin-top:16px;">
+      <div class="section-head">
+        <div class="left">
+          <h2>영업담당자별 비교</h2>
+          <div class="desc">연간과 분기누적 실적을 각 담당자별로 나누어 보여줍니다.</div>
+        </div>
+        <div class="right">상위 추정 순으로 정렬</div>
+      </div>
+      <div class="chart-grid">
+        {bar_panel("영업담당자별 연간 목표금액 · 기저금액 · 추정금액", annual_sorted, "annual_goal", "annual_base", "annual_forecast", "연간 추정 상위 3명")}
+        {bar_panel("영업담당자별 분기누적 목표금액 · 기저금액 · 추정금액", quarter_sorted, "quarter_goal", "quarter_base", "quarter_forecast", "분기누적 추정 상위 3명")}
+      </div>
+    </div>
+
+    <div class="card section" style="margin-top:16px;">
+      <div class="section-head">
+        <div class="left">
+          <h2>영업담당자 상세표</h2>
+          <div class="desc">워크북 원본 값을 그대로 반영한 상세 데이터</div>
+        </div>
+      </div>
+      <table class="detail-table" role="table">
+        <thead>
+          <tr>
+            <th>영업담당자</th>
+            <th>개인 연간 목표 금액</th>
+            <th>개인 연간 기저 금액</th>
+            <th>개인 연간 추정 금액</th>
+            <th>개인 분기 누적 목표 금액</th>
+            <th>개인 분기 누적 기저 금액</th>
+            <th>개인 분기 누적 추정 금액</th>
+          </tr>
+        </thead>
+        <tbody>
+          {''.join(detail_rows)}
+          <tr class="total">
+            <td>합계</td>
+            <td class="num">{money(ws['B20'].value)}</td>
+            <td class="num">{money(ws['C20'].value)}</td>
+            <td class="num">{money(ws['D20'].value)}</td>
+            <td class="num">{money(ws['E20'].value)}</td>
+            <td class="num">{money(ws['F20'].value)}</td>
+            <td class="num">{money(ws['G20'].value)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+    output.write_text(html, encoding="utf-8")
+    print(f"wrote {output}")
+
+
+if __name__ == "__main__":
+    main()
