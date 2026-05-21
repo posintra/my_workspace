@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -44,58 +44,194 @@
       border-color: #93c5fd;
     }
 
-    .chart-wrap {
+    .panel {
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
-      padding: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
 
-    .chart-title {
+    .panel h2 {
       margin: 0 0 10px;
       font-size: 16px;
-      font-weight: 600;
     }
 
-    .chart-image {
-      width: 100%;
-      max-width: 1200px;
-      display: block;
+    .status {
+      margin: 0;
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .date-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .date-item {
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      background: #f8fafc;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .date-item:hover {
+      background: #e2e8f0;
+    }
+
+    .date-item.active {
+      background: #bfdbfe;
+      border-color: #60a5fa;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .image-card {
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
+      padding: 8px;
+      background: #f8fafc;
+    }
+
+    .image-card p {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: #334155;
+      word-break: break-all;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+      background: #ffffff;
     }
   </style>
 </head>
 <body>
   <h1>일별 주요 금융지표</h1>
+
   <div class="button-row">
-    <button type="button" class="chart-btn active" data-img="일별금융지표/260519/장단기_선행지수.png" data-title="장단기금리차-선행지수">장단기금리차-선행지수</button>
-    <button type="button" class="chart-btn" data-img="일별금융지표/260519/선행지수_주가.png" data-title="선행지수-주가">선행지수-주가</button>
-    <button type="button" class="chart-btn" data-img="일별금융지표/260519/주가_일별수출액.png" data-title="주가-일별수출액">주가-일별수출액</button>
-    <button type="button" class="chart-btn" data-img="일별금융지표/260519/장단기-주가.png" data-title="장단기금리차-주가">장단기금리차-주가</button>
+    <button type="button" id="btnSpreadLeading">장단기금리차-선행지수</button>
+    <button type="button">선행지수-주가</button>
+    <button type="button">주가-일별수출액</button>
+    <button type="button">장단기금리차-주가</button>
   </div>
 
-  <div class="chart-wrap">
-    <h2 id="chartTitle" class="chart-title">장단기금리차-선행지수</h2>
-    <img id="chartImage" class="chart-image" src="일별금융지표/260519/장단기_선행지수.png" alt="장단기금리차-선행지수" />
-  </div>
+  <section class="panel">
+    <h2>yymmdd 폴더 목록</h2>
+    <p id="folderStatus" class="status">첫 번째 버튼을 누르면 Codex폴더를 자동 스캔합니다.</p>
+    <div id="dateList" class="date-list"></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="imageTitle">이미지 미리보기</h2>
+    <p id="imageStatus" class="status">날짜를 클릭하면 하위 폴더의 이미지 파일을 표시합니다.</p>
+    <div id="imageGrid" class="image-grid"></div>
+  </section>
 
   <script>
-    const buttons = document.querySelectorAll(".chart-btn");
-    const chartTitle = document.getElementById("chartTitle");
-    const chartImage = document.getElementById("chartImage");
+    const btnSpreadLeading = document.getElementById("btnSpreadLeading");
+    const folderStatus = document.getElementById("folderStatus");
+    const dateList = document.getElementById("dateList");
+    const imageTitle = document.getElementById("imageTitle");
+    const imageStatus = document.getElementById("imageStatus");
+    const imageGrid = document.getElementById("imageGrid");
 
-    for (const button of buttons) {
-      button.addEventListener("click", () => {
-        for (const b of buttons) b.classList.remove("active");
-        button.classList.add("active");
+    const clearImages = () => {
+      imageGrid.innerHTML = "";
+    };
 
-        const title = button.dataset.title;
-        const imgPath = button.dataset.img;
-        chartTitle.textContent = title;
-        chartImage.src = imgPath;
-        chartImage.alt = title;
-      });
-    }
+    const renderImagesForDate = async (date) => {
+      clearImages();
+      imageTitle.textContent = `${date} 이미지 미리보기`;
+      imageStatus.textContent = "이미지를 불러오는 중입니다...";
+
+      try {
+        const response = await fetch(`/api/images?date=${encodeURIComponent(date)}`);
+        if (!response.ok) throw new Error("이미지 목록 조회 실패");
+
+        const result = await response.json();
+        const files = result.files || [];
+
+        if (files.length === 0) {
+          imageStatus.textContent = "이 날짜 폴더에는 이미지 파일이 없습니다.";
+          return;
+        }
+
+        imageStatus.textContent = `${files.length}개의 이미지 파일을 표시합니다.`;
+
+        for (const relativePath of files) {
+          const card = document.createElement("div");
+          card.className = "image-card";
+
+          const name = document.createElement("p");
+          name.textContent = relativePath;
+
+          const img = document.createElement("img");
+          img.src = `/files/${encodeURIComponent(relativePath)}`;
+          img.alt = relativePath;
+
+          card.appendChild(name);
+          card.appendChild(img);
+          imageGrid.appendChild(card);
+        }
+      } catch (error) {
+        imageStatus.textContent = "이미지 목록을 불러오지 못했습니다. 서버 실행 상태를 확인하세요.";
+      }
+    };
+
+    const loadDateFolders = async () => {
+      folderStatus.textContent = "Codex폴더를 자동 스캔하는 중입니다...";
+      dateList.innerHTML = "";
+      clearImages();
+      imageTitle.textContent = "이미지 미리보기";
+      imageStatus.textContent = "날짜를 클릭하면 하위 폴더의 이미지 파일을 표시합니다.";
+
+      try {
+        const response = await fetch("/api/date-folders");
+        if (!response.ok) throw new Error("날짜 폴더 조회 실패");
+
+        const result = await response.json();
+        const dates = result.dates || [];
+
+        if (dates.length === 0) {
+          folderStatus.textContent = "yymmdd 형식의 폴더를 찾지 못했습니다.";
+          return;
+        }
+
+        folderStatus.textContent = `${dates.length}개의 yymmdd 폴더를 찾았습니다. 날짜를 선택하세요.`;
+
+        for (const date of dates) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "date-item";
+          button.textContent = date;
+
+          button.addEventListener("click", () => {
+            document.querySelectorAll(".date-item").forEach((el) => el.classList.remove("active"));
+            button.classList.add("active");
+            renderImagesForDate(date);
+          });
+
+          dateList.appendChild(button);
+        }
+      } catch (error) {
+        folderStatus.textContent = "폴더 목록을 불러오지 못했습니다. server.py를 실행한 뒤 접속하세요.";
+      }
+    };
+
+    btnSpreadLeading.addEventListener("click", loadDateFolders);
   </script>
 </body>
 </html>
