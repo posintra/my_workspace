@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <defs>
+    <style>
+      .bg { fill: #faf8f3; }
+      .title { font: 700 28px 'Malgun Gothic', sans-serif; fill: #1f2937; }
+      .subtitle { font: 400 15px 'Malgun Gothic', sans-serif; fill: #4b5563; }
+      .axis { font: 13px 'Malgun Gothic', sans-serif; fill: #374151; }
+      .small { font: 12px 'Malgun Gothic', sans-serif; fill: #6b7280; }
+      .grid { stroke: #d6d3d1; stroke-width: 1; }
+      .frame { stroke: #78716c; stroke-width: 1.5; fill: none; }
+      .bond { stroke: #b45309; stroke-width: 4; fill: none; }
+      .lead { stroke: #2563eb; stroke-width: 4; fill: none; }
+      .bond-dot { fill: #b45309; }
+      .lead-dot { fill: #2563eb; }
+      .legend { font: 13px 'Malgun Gothic', sans-serif; fill: #111827; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1200" height="700"/>
+  <text class="title" x="110" y="55">한국 국고채 스프레드와 선행종합지수 순환변동치</text>
+  <text class="subtitle" x="110" y="82">공통 최근 1년 창: 2025-03 ~ 2026-02 | 스프레드 = 10년 - ((1년 + 3년) / 2), 단위 bp</text>
+
+  <rect x="110" y="120" width="920" height="460" class="frame"/>
+
+  <line x1="110" y1="580" x2="1030" y2="580" class="grid"/>
+  <line x1="110" y1="503.3" x2="1030" y2="503.3" class="grid"/>
+  <line x1="110" y1="426.7" x2="1030" y2="426.7" class="grid"/>
+  <line x1="110" y1="350.0" x2="1030" y2="350.0" class="grid"/>
+  <line x1="110" y1="273.3" x2="1030" y2="273.3" class="grid"/>
+  <line x1="110" y1="196.7" x2="1030" y2="196.7" class="grid"/>
+  <line x1="110" y1="120.0" x2="1030" y2="120.0" class="grid"/>
+
+  <text class="axis" x="66" y="585">10</text>
+  <text class="axis" x="66" y="508">20</text>
+  <text class="axis" x="66" y="432">30</text>
+  <text class="axis" x="66" y="355">40</text>
+  <text class="axis" x="66" y="278">50</text>
+  <text class="axis" x="66" y="201">60</text>
+  <text class="axis" x="66" y="125">70</text>
+  <text class="axis" x="36" y="105">채권 스프레드(bp)</text>
+
+  <text class="axis" x="1042" y="585">100.8</text>
+  <text class="axis" x="1042" y="508">101.3</text>
+  <text class="axis" x="1042" y="432">101.8</text>
+  <text class="axis" x="1042" y="355">102.3</text>
+  <text class="axis" x="1042" y="278">102.8</text>
+  <text class="axis" x="1042" y="201">103.3</text>
+  <text class="axis" x="1042" y="125">103.8</text>
+  <text class="axis" x="980" y="105">선행 순환변동치</text>
+
+  <text class="axis" x="110" y="610">2025-03</text>
+  <text class="axis" x="194" y="610">04</text>
+  <text class="axis" x="278" y="610">05</text>
+  <text class="axis" x="362" y="610">06</text>
+  <text class="axis" x="446" y="610">07</text>
+  <text class="axis" x="530" y="610">08</text>
+  <text class="axis" x="614" y="610">09</text>
+  <text class="axis" x="698" y="610">10</text>
+  <text class="axis" x="782" y="610">11</text>
+  <text class="axis" x="866" y="610">12</text>
+  <text class="axis" x="950" y="610">2026-01</text>
+  <text class="axis" x="1010" y="610">02</text>
+
+  <path class="bond" d="M110 506.4 L193.6 376.1 L277.3 376.1 L360.9 376.1 L444.5 313.2 L528.2 313.2 L611.8 313.2 L695.5 298.6 L779.1 228.1 L862.7 189.8 L946.4 181.3 L1030 131.5"/>
+  <path class="lead" d="M110 534.0 L193.6 442.0 L277.3 396.0 L360.9 365.3 L444.5 411.3 L528.2 334.7 L611.8 288.7 L695.5 258.0 L779.1 273.3 L862.7 181.3 L946.4 150.7 L1030 181.3"/>
+
+  <circle class="bond-dot" cx="110" cy="506.4" r="4.5"/>
+  <circle class="bond-dot" cx="193.6" cy="376.1" r="4.5"/>
+  <circle class="bond-dot" cx="277.3" cy="376.1" r="4.5"/>
+  <circle class="bond-dot" cx="360.9" cy="376.1" r="4.5"/>
+  <circle class="bond-dot" cx="444.5" cy="313.2" r="4.5"/>
+  <circle class="bond-dot" cx="528.2" cy="313.2" r="4.5"/>
+  <circle class="bond-dot" cx="611.8" cy="313.2" r="4.5"/>
+  <circle class="bond-dot" cx="695.5" cy="298.6" r="4.5"/>
+  <circle class="bond-dot" cx="779.1" cy="228.1" r="4.5"/>
+  <circle class="bond-dot" cx="862.7" cy="189.8" r="4.5"/>
+  <circle class="bond-dot" cx="946.4" cy="181.3" r="4.5"/>
+  <circle class="bond-dot" cx="1030" cy="131.5" r="4.5"/>
+
+  <circle class="lead-dot" cx="110" cy="534.0" r="4.5"/>
+  <circle class="lead-dot" cx="193.6" cy="442.0" r="4.5"/>
+  <circle class="lead-dot" cx="277.3" cy="396.0" r="4.5"/>
+  <circle class="lead-dot" cx="360.9" cy="365.3" r="4.5"/>
+  <circle class="lead-dot" cx="444.5" cy="411.3" r="4.5"/>
+  <circle class="lead-dot" cx="528.2" cy="334.7" r="4.5"/>
+  <circle class="lead-dot" cx="611.8" cy="288.7" r="4.5"/>
+  <circle class="lead-dot" cx="695.5" cy="258.0" r="4.5"/>
+  <circle class="lead-dot" cx="779.1" cy="273.3" r="4.5"/>
+  <circle class="lead-dot" cx="862.7" cy="181.3" r="4.5"/>
+  <circle class="lead-dot" cx="946.4" cy="150.7" r="4.5"/>
+  <circle class="lead-dot" cx="1030" cy="181.3" r="4.5"/>
+
+  <rect x="110" y="635" width="18" height="4" fill="#b45309"/>
+  <text class="legend" x="136" y="642">국고채 스프레드(bp)</text>
+  <rect x="320" y="635" width="18" height="4" fill="#2563eb"/>
+  <text class="legend" x="346" y="642">KOSIS 선행종합지수 순환변동치</text>
+
+  <text class="small" x="110" y="670">주: 2025-04~2025-09 채권 금리는 월간 접근 제한으로 한국은행 원계열의 분기 평균을 해당 월에 반복 배치했습니다.</text>
+</svg>
