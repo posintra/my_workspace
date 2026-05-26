@@ -1,0 +1,58 @@
+{
+  "type": "line",
+  "data": {
+    "labels": ["2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04"],
+    "datasets": [
+      {
+        "label": "Leading cyclical component",
+        "data": [99.8951211032533, 100.024652272451, 100.164431423865, 100.323769226965, 100.518047477277, 100.769201644598, 101.061634278367, 101.3745007066, 101.701808789728, 102.013513409392, 102.281229429281, 102.501974485221],
+        "borderColor": "#1f77b4",
+        "backgroundColor": "#1f77b4",
+        "yAxisID": "y_cli",
+        "tension": 0.2,
+        "fill": false
+      },
+      {
+        "label": "KOSPI",
+        "data": [2697.67, 3071.70, 3245.44, 3186.01, 3424.60, 4107.50, 3926.59, 4214.17, 5224.36, 6244.13, 5052.46, 6598.87],
+        "borderColor": "#d62728",
+        "backgroundColor": "#d62728",
+        "yAxisID": "y_kospi",
+        "tension": 0.2,
+        "fill": false
+      }
+    ]
+  },
+  "options": {
+    "plugins": {
+      "title": {
+        "display": true,
+        "text": "Latest 1Y Leading Cyclical Component vs KOSPI"
+      },
+      "legend": {
+        "display": true
+      }
+    },
+    "scales": {
+      "y_cli": {
+        "type": "linear",
+        "position": "left",
+        "title": {
+          "display": true,
+          "text": "Leading cyclical component"
+        }
+      },
+      "y_kospi": {
+        "type": "linear",
+        "position": "right",
+        "grid": {
+          "drawOnChartArea": false
+        },
+        "title": {
+          "display": true,
+          "text": "KOSPI"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+# =========================================================
+# Codex Worktree Automation Template
+# ---------------------------------------------------------
+# 이 파일은 "예시 템플릿"입니다.
+# 실제 자동화 생성 시 아래 값을 복사해 automation_update(create/suggested_create)에 반영하세요.
+# =========================================================
+
+name = "GitHub Worktree Daily Check"
+kind = "cron"
+status = "ACTIVE"
+destination = "thread"
+executionEnvironment = "worktree"
+
+# 매일 오전 9시 (Asia/Seoul 기준으로 요청 시 해석됨)
+rrule = "FREQ=DAILY;BYHOUR=9;BYMINUTE=0;BYSECOND=0"
+
+# 작업 디렉터리(배열 가능)
+cwds = ["C:\\Users\\SKTelecom\\Desktop\\Codex폴더"]
+
+# 모델/추론강도는 필요 시 조정
+model = "gpt-5.4"
+reasoningEffort = "medium"
+
+# worktree 시작 시 로컬 환경 셋업 스크립트
+# 주의: 즉시 create/update에 setup config를 넣을 때는 suggested_create/suggested_update로 먼저 제안하는 흐름이 권장됩니다.
+localEnvironmentConfigPath = "C:\\Users\\SKTelecom\\Desktop\\Codex폴더\\worktree-github-setup.template.ps1"
+
+prompt = """
+현재 저장소를 pull/검증한 뒤, 필요한 점검 작업을 수행하고 결과를 간단한 요약으로 보고해.
+오류가 있으면 원인과 재현 조건을 함께 남기고, GitHub push가 필요한 변경은 브랜치 전략을 지켜 반영해.
+"""
+

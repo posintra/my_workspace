@@ -1,0 +1,2 @@
+PNG chart generation was blocked in this run because local shell execution failed with CreateProcessWithLogonW error 1385.
+Email summary was still sent with the latest confirmed KOSPI and export values.

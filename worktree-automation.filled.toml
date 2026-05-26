@@ -1,0 +1,17 @@
+name = "GitHub Worktree Daily Check"
+kind = "cron"
+status = "ACTIVE"
+destination = "thread"
+executionEnvironment = "worktree"
+rrule = "FREQ=DAILY;BYHOUR=9;BYMINUTE=0;BYSECOND=0"
+cwds = ["C:\\Users\\SKTelecom\\Desktop\\Codex폴더"]
+model = "gpt-5.4"
+reasoningEffort = "medium"
+localEnvironmentConfigPath = "C:\\Users\\SKTelecom\\Desktop\\Codex폴더\\worktree-github-setup.ps1"
+
+# 주의: PAT는 파일에 저장하지 말고 자동화 환경변수/시크릿으로 GITHUB_TOKEN 주입
+
+prompt = """
+현재 저장소를 pull/검증한 뒤, 필요한 점검 작업을 수행하고 결과를 간단한 요약으로 보고해.
+오류가 있으면 원인과 재현 조건을 함께 남기고, GitHub push가 필요한 변경은 브랜치 전략을 지켜 반영해.
+"""
