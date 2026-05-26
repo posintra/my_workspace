@@ -72,13 +72,25 @@
       }
     };
 
+    const fetchDateFolders = async () => {
+      try {
+        const apiResponse = await fetch("/api/date-folders", { cache: "no-store" });
+        if (apiResponse.ok) {
+          const apiResult = await apiResponse.json();
+          const apiDates = apiResult.dates || [];
+          if (apiDates.length > 0) return apiDates;
+        }
+      } catch (_) {}
+
+      const fallbackResponse = await fetch("/date-folders.json", { cache: "no-store" });
+      if (!fallbackResponse.ok) throw new Error("조회 실패");
+      const fallbackResult = await fallbackResponse.json();
+      return fallbackResult.dates || [];
+    };
+
     const loadDateFolders = async () => {
       try {
-        const response = await fetch("/date-folders.json");
-        if (!response.ok) throw new Error("조회 실패");
-
-        const result = await response.json();
-        const dates = result.dates || [];
+        const dates = await fetchDateFolders();
 
         dateList.innerHTML = "";
         metricButtons.innerHTML = "";
@@ -113,5 +125,6 @@
   </script>
 </body>
 </html>
+
 
 

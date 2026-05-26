@@ -1,18 +1,31 @@
 ﻿const fs = require("fs");
 const path = require("path");
 
-module.exports = (req, res) => {
+function listDateFolders(baseDir) {
   try {
-    const baseDir = process.cwd();
     const entries = fs.readdirSync(baseDir, { withFileTypes: true });
-    const dates = entries
+    return entries
       .filter((entry) => entry.isDirectory() && /^\d{6}$/.test(entry.name))
       .map((entry) => entry.name)
       .sort();
-
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.status(200).send({ dates });
   } catch (error) {
-    res.status(500).send({ dates: [], error: "failed_to_list_date_folders" });
+    return [];
   }
+}
+
+module.exports = (req, res) => {
+  const candidates = [
+    process.cwd(),
+    path.resolve(__dirname, ".."),
+    "/var/task",
+  ];
+
+  let dates = [];
+  for (const dir of candidates) {
+    dates = listDateFolders(dir);
+    if (dates.length > 0) break;
+  }
+
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.status(200).send({ dates });
 };
