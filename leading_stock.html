@@ -26,6 +26,11 @@
     const chartImage = document.getElementById("chartImage");
     const date = new URLSearchParams(window.location.search).get("date") || "";
 
+    const toStaticPath = (relativePath) => {
+      const segments = relativePath.split("/").map((segment) => encodeURIComponent(segment));
+      return `/${segments.join("/")}`;
+    };
+
     if (!/^\d{6}$/.test(date)) {
       status.textContent = "유효한 yymmdd 날짜가 전달되지 않았습니다.";
     } else {
@@ -33,7 +38,7 @@
       const imageRelativePath = `${date}/선행지수_주가.png`;
       chartImage.onload = () => { status.textContent = "이미지 로드 완료"; chartImage.hidden = false; };
       chartImage.onerror = () => { status.textContent = `이미지를 찾을 수 없습니다: ${imageRelativePath}`; chartImage.hidden = true; };
-      chartImage.src = `/files/${encodeURIComponent(imageRelativePath)}`;
+      chartImage.src = toStaticPath(imageRelativePath);
     }
   </script>
 </body>

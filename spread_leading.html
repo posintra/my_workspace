@@ -65,13 +65,18 @@
     const params = new URLSearchParams(window.location.search);
     const date = params.get("date") || "";
 
+    const toStaticPath = (relativePath) => {
+      const segments = relativePath.split("/").map((segment) => encodeURIComponent(segment));
+      return `/${segments.join("/")}`;
+    };
+
     if (!/^\d{6}$/.test(date)) {
       status.textContent = "유효한 yymmdd 날짜가 전달되지 않았습니다.";
     } else {
       dateText.textContent = `선택한 폴더: ${date}`;
 
       const imageRelativePath = `${date}/국채스프레드_선행지수_비교.png`;
-      const imageUrl = `/files/${encodeURIComponent(imageRelativePath)}`;
+      const imageUrl = toStaticPath(imageRelativePath);
 
       chartImage.onload = () => {
         status.textContent = "이미지 로드 완료";
@@ -88,4 +93,3 @@
   </script>
 </body>
 </html>
-
