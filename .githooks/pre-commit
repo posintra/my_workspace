@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+python update_date_folders.py
+
+git add date-folders.json
