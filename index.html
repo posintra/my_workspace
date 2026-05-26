@@ -74,7 +74,7 @@
 
     const loadDateFolders = async () => {
       try {
-        const response = await fetch("/api/date-folders");
+        const response = await fetch("/date-folders.json");
         if (!response.ok) throw new Error("조회 실패");
 
         const result = await response.json();
@@ -113,4 +113,5 @@
   </script>
 </body>
 </html>
+
 
