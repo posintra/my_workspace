@@ -54,7 +54,7 @@
 
   <section class="panel">
     <p id="status" class="status">이미지를 불러오는 중입니다...</p>
-    <img id="chartImage" class="chart" alt="국채스프레드_선행지수_비교" hidden />
+    <img id="chartImage" class="chart" alt="장단기_선행지수" hidden />
   </section>
 
   <script>
@@ -75,7 +75,7 @@
     } else {
       dateText.textContent = `선택한 폴더: ${date}`;
 
-      const imageRelativePath = `${date}/국채스프레드_선행지수_비교.png`;
+      const imageRelativePath = `${date}/장단기_선행지수.png`;
       const imageUrl = toStaticPath(imageRelativePath);
 
       chartImage.onload = () => {
@@ -93,3 +93,4 @@
   </script>
 </body>
 </html>
+
