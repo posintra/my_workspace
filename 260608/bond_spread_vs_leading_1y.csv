@@ -1,0 +1,13 @@
+month,bond_1y_pct,bond_3y_pct,bond_10y_pct,proxy_2y_pct,bond_spread_bp,leading_cyclical_component,lead_source_note,bond_source_note
+2025-03,2.613,2.592,2.798,2.6025,19.6,101.1,KOSIS monthly snapshot,monthly
+2025-04,2.349,2.392,2.736,2.3705,36.6,KOSIS regional report snapshot,quarterly average repeated for Apr-Jun
+2025-05,2.349,2.392,2.736,2.3705,36.6,KOSIS regional report snapshot,quarterly average repeated for Apr-Jun
+2025-06,2.349,2.392,2.736,2.3705,36.6,KOSIS regional report snapshot,quarterly average repeated for Apr-Jun
+2025-07,2.322,2.452,2.835,2.3870,44.8,KOSIS regional report snapshot,quarterly average repeated for Jul-Sep
+2025-08,2.322,2.452,2.835,2.3870,44.8,KOSIS regional report snapshot,quarterly average repeated for Jul-Sep
+2025-09,2.322,2.452,2.835,2.3870,44.8,KOSIS regional report snapshot,quarterly average repeated for Jul-Sep
+2025-10,2.325,2.601,2.930,2.4630,46.7,KOSIS regional report snapshot,monthly
+2025-11,2.483,2.883,3.242,2.6830,55.9,KOSIS regional report snapshot,monthly
+2025-12,2.495,3.016,3.364,2.7555,60.9,KOSIS regional report snapshot,monthly
+2026-01,2.685,3.042,3.483,2.8635,62.0,KOSIS regional report snapshot,monthly revised
+2026-02,2.772,3.196,3.669,2.9840,68.5,103.4,KOSIS regional report snapshot,monthly revised
